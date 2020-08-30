@@ -2,7 +2,11 @@
   (:require [re-graph.core :as re-graph]
             [reagent.core :as r]
             [re-frame.core :as rf]
-            [reagent.dom :as rdom]))
+            [reagent.dom :as rdom]
+            [juxtaminute.common :as common]))
+
+(def regraph-config {:ws {:url "wss://cute-ape-95.hasura.app/v1/graphql"}
+                     :http {:url "https://cute-ape-95.hasura.app/v1/graphql"}})
 
 (def questions-query
   (str
@@ -16,13 +20,31 @@
   }"
    "}"))
 
-(re-graph/init {:ws {:url "wss://cute-ape-95.hasura.app/v1/graphql"}
-                :http {:url "https://cute-ape-95.hasura.app/v1/graphql"}})
+(def game-state-query
+  (str
+   "{"
+   "questions(order_by: {askedTime: desc}) {
+    user
+    question
+    id
+    askedTime
+    answer
+  }"
+   "}"))
 
 (rf/reg-event-db
  ::success
  (fn [db [_ k res]]
    (assoc-in db [:data k] (:data res))))
+
+(rf/reg-event-fx
+ ::init
+ (fn [_ _]
+   {:fx [[:dispatch [::re-graph/init regraph-config]]
+         [:dispatch [::re-graph/subscribe
+                     :game-state
+                     game-state-query
+                     [::success :game-state]]]]}))
 
 (rf/reg-sub
  ::data
@@ -31,20 +53,8 @@
 
 (defn root-view
   []
-  (let [data @(rf/subscribe [::data :questions])]
-    [:<>
-     [:button {:on-click #(rf/dispatch [::re-graph/subscribe
-                                        :questions
-                                        questions-query
-                                        {}
-                                        [::success :questions]])}
-      "get questions"]
-     [:div.questions
-      (for [q (:questions data)]
-        ^{:key q}
-        [:div.question
-         [:h3 (:question q)]
-         [:p (:answer q)]])]]))
+  (let [data @(rf/subscribe [::data :game-state])]
+    [common/pprint-code data]))
 
 
 (defn ^:export ^:dev/after-load render []
@@ -52,5 +62,5 @@
                   (js/document.getElementById "root")))
 
 (defn ^:export init []
-  (rf/dispatch-sync [:initialize])
+  (rf/dispatch-sync [::init])
   (render))
