@@ -5,5 +5,9 @@
   "devDependencies": {
     "shadow-cljs": "2.11.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "react": "16.13.1",
+    "react-dom": "16.13.0",
+    "react-refresh": "0.8.1"
+  }
 }
