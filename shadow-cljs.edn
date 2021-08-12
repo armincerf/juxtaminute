@@ -7,7 +7,8 @@
  [[re-graph "0.1.14" :exclusions [re-graph.hato]]
   [reagent "1.0.0-alpha2"]
   [medley "1.3.0"]
-  [re-frame "1.1.1"]]
+  [re-frame "1.1.1"]
+  [tick "0.4.26-alpha"]]
  :dev-http {3002 "public"}
  :builds
  {:app
